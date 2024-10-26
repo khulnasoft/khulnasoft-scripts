@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+args=(
+	--init
+	--interactive
+	--name speedtest
+	--network host
+	--rm
+)
+
+if [ -z "${DOCKER_HOST:-}" ]; then
+	user="$(id -u)"
+	group="$(id -g)"
+	args+=( --user "$user:$group" )
+	mkdir -p "$HOME/.config/ookla"
+	args+=( --mount type=bind,src="$HOME/.config/ookla",dst="$HOME/.config/ookla" --env HOME="$HOME" )
+fi
+
+if [ -t 0 ] && [ -t 1 ]; then
+	args+=( --tty )
+fi
+
+exec docker run "${args[@]}" khulnasoft/speedtest "$@"
